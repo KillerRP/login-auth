@@ -4,19 +4,10 @@ import { useEffect, useState } from "react";
 import * as yup from "yup";
 
 const Register = () => {
-  const dbUser = {
-    customer: {
-      firstname: "",
-      middlename: "",
-      lastname: "",
-      email: "",
-    },
+  const [userInfo, setUserInfo] = useState({
+    customer: {},
     password: "",
-  };
-
-  const [customer, SetCustomer] = useState({});
-  const [password, SetPassword] = useState({});
-  const [userInfo, setUserInfo] = useState(dbUser);
+  });
 
   const initialValues = {
     firstname: "", //Same as name="firstname" in input
@@ -26,18 +17,18 @@ const Register = () => {
     password: "",
   };
 
+  // Data is not setting on one click alway have to click twice on register to log full array value WHY?
   const onSubmit = (values) => {
     console.log(values);
-    setUserInfo(values);
-    console.log("UserInfo : ", userInfo);
-    // console.log("Form Data ", values);
-    // SetCustomer({
-    //   firstname: values.firstname,
-    //   middlename: values.middlename,
-    //   lastname: values.lastname,
-    //   email: values.email,
-    // });
-    // SetPassword({ password: values.password });
+    const formUserInfo = {
+      firstname: values.firstname,
+      middlename: values.middlename,
+      lastname: values.lastname,
+      email: values.email,
+    };
+    console.log("Form User Data : ", formUserInfo);
+    setUserInfo({ customer: { ...formUserInfo }, password: values.password });
+    console.log("Full Array : ", userInfo);
   };
 
   const validationSchema = yup.object().shape({
@@ -48,12 +39,26 @@ const Register = () => {
     password: yup.string().required("Required !"),
   });
 
+  // Using useEffect Problem is solved Data is saved with one click only
+  useEffect(() => {
+    console.log(`Using UseEffect : ${JSON.stringify(userInfo)}`);
+    axios
+      .post(`https://admin.thebig.deals/rest/all/V1/customers`, userInfo)
+      .then((res) => {
+        console.log("Response : ", res);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [userInfo]);
+
   return (
     <div className="d-flex flex-column align-items-center mt-5 pt-5">
       <div>
         <h1>Register</h1>
       </div>
       <Formik
+        enableReinitialize
         initialValues={initialValues}
         validationSchema={validationSchema}
         onSubmit={onSubmit}
@@ -120,7 +125,7 @@ const Register = () => {
             </ErrorMessage>
           </div>
           <div className="mb-3 d-grid gap-2 col-6 mx-auto">
-            <button type="submit" className="btn btn-primary ">
+            <button type="submit" className="btn btn-primary">
               Register
             </button>
           </div>
