@@ -5,7 +5,7 @@ const Header = () => {
       <ul className="list-group d-flex flex-row">
         <li className="list-group-item">
           <Link to="/" className="text-decoration-none">
-            Login
+            Home
           </Link>
         </li>
         <li className="list-group-item">

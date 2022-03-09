@@ -1,27 +1,35 @@
+import axios from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
 import * as yup from "yup";
+
 const Login = () => {
-  const userData = {
-    email: "xyz@gmail.com",
-    paddword: 1234,
-  };
+  const navigation = useNavigate();
 
   const initialValues = {
     email: "",
     password: "",
   };
   const onSubmit = (values) => {
-    if (values.email == userData.email) {
-      if (values.password == userData.paddword) {
-        console.log("Login Sucess");
-      } else {
-        console.log("Invalid Password");
-      }
-    } else {
-      console.log("Invalid Email");
-    }
+    const userData = {
+      username: values.email,
+      password: values.password,
+    };
+    axios
+      .post(
+        `https://admin.thebig.deals/rest/all/V1/integration/customer/token`,
+        userData
+      )
+      .then((res) => {
+        // console.log(JSON.stringify(res));
+        console.log(`Response Data : ${res.data}`);
+        localStorage.setItem("user-info", res.data);
+        navigation("/dashboard");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
     console.log("Login Data : ", values);
   };
 

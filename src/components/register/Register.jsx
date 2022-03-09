@@ -1,34 +1,40 @@
 import axios from "axios";
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import { useEffect, useState } from "react";
 import * as yup from "yup";
 
 const Register = () => {
-  const [userInfo, setUserInfo] = useState({
-    customer: {},
-    password: "",
-  });
-
   const initialValues = {
-    firstname: "", //Same as name="firstname" in input
+    firstname: "",
     middlename: "",
     lastname: "",
     email: "",
     password: "",
   };
 
-  // Data is not setting on one click alway have to click twice on register to log full array value WHY?
+  const formStyle = {
+    width: "100%",
+    paddingInline: "39%",
+  };
   const onSubmit = (values) => {
     console.log(values);
+
     const formUserInfo = {
-      firstname: values.firstname,
-      middlename: values.middlename,
-      lastname: values.lastname,
-      email: values.email,
+      customer: {
+        firstname: values.firstname,
+        middlename: values.middlename,
+        lastname: values.lastname,
+        email: values.email,
+      },
+      password: values.password,
     };
-    console.log("Form User Data : ", formUserInfo);
-    setUserInfo({ customer: { ...formUserInfo }, password: values.password });
-    console.log("Full Array : ", userInfo);
+    axios
+      .post(`https://admin.thebig.deals/rest/all/V1/customers`, formUserInfo)
+      .then((res) => {
+        console.log("Response : ", res);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   const validationSchema = yup.object().shape({
@@ -36,21 +42,16 @@ const Register = () => {
     middlename: yup.string().required("Required !"),
     lastname: yup.string().required("Required !"),
     email: yup.string().email("Invalid Email Format").required("Required !"),
-    password: yup.string().required("Required !"),
+    password: yup
+      .string()
+      .required("Required !")
+      .matches(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
+        "Must Contain 8 Characters, One Uppercase, One Lowercase, One Number and One special case Character"
+      ),
   });
 
   // Using useEffect Problem is solved Data is saved with one click only
-  useEffect(() => {
-    console.log(`Using UseEffect : ${JSON.stringify(userInfo)}`);
-    axios
-      .post(`https://admin.thebig.deals/rest/all/V1/customers`, userInfo)
-      .then((res) => {
-        console.log("Response : ", res);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, [userInfo]);
 
   return (
     <div className="d-flex flex-column align-items-center mt-5 pt-5">
@@ -58,12 +59,11 @@ const Register = () => {
         <h1>Register</h1>
       </div>
       <Formik
-        enableReinitialize
         initialValues={initialValues}
         validationSchema={validationSchema}
         onSubmit={onSubmit}
       >
-        <Form>
+        <Form style={formStyle}>
           <div className="mb-3">
             <Field
               type="text"
@@ -121,7 +121,7 @@ const Register = () => {
               name="password"
             />
             <ErrorMessage name="password">
-              {(msg) => <div className="text-danger">{msg}</div>}
+              {(msg) => <div className="text-danger flex-wrap">{msg}</div>}
             </ErrorMessage>
           </div>
           <div className="mb-3 d-grid gap-2 col-6 mx-auto">
